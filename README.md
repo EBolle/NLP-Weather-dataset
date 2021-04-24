@@ -1,8 +1,8 @@
 # NLP-Weather-dataset
 
-This project contains a data pipeline that creates a dataset which contains reviews of business in the United States, 
-and the weather during the time of writing of that review. This dataset allows NLP researchers to examine whether there
-is a relation between written text and the weather. 
+This project contains a data pipeline that creates a dataset which contains reviews of local businesses in the United
+States, and the weather during the time of writing of that review. This dataset allows NLP researchers to examine whether 
+there is a relation between written text and the weather. 
 
 ## The data
 
@@ -29,6 +29,8 @@ records is included.
 - /by_year .csv datasets from 2004-2021 (628.553.790 rows)
 - us_stations.txt this is a modified version of ghcnd-stations.txt (65.171 rows)
 
+Uncompressed these files contain more than 30GB of data.
+
 ## Transformations
 
 The final dataset looks as follows:
@@ -45,7 +47,7 @@ only include reviews of users with more than 25 useful reviews (top 20% range).
 
 From the GHCN source we retrieve weather metrics for 65.171 weather stations throughout the United States, for each day
 between 2004-2021. Since GHCN provides weather data globally, we need to filter the yearly weather data on location 
-('US'). In total there are 35 metrics available, but we only look at the 6 of them, which are the most prevalent metrics.
+('US'). In total there are 35 metrics available but we only consider the 6 most prevalent metrics.
 
 - PRCP = Precipitation (tenths of mm)
 - SNOW = Snowfall (mm)
@@ -54,6 +56,30 @@ between 2004-2021. Since GHCN provides weather data globally, we need to filter 
 - TMIN = Minimum temperature (tenths of degrees C)
 - TOBS = Temperature at the time of observation (tenths of degrees C) 
 
+## Processing
+
+Due to the size of the data we will be utilizing Spark on EMR (AWS). Note that if you do not want to use Spark on EMR
+I have included some code snippets in /local_python which allow you to process most of the data locally, even if you have 
+a computer with low memory. However, once you want to join these processed data sources it becomes very tedious to do that
+locally due to the size of the data. Therefore, I would recommend to use Spark om EMR.
+
+## Dataflow
+
+Show a very simple diagram with S3 -> Spark on EMR -> S3, wrapped in Airflow.
+
+## Instructions
+
+To execute this pipeline yourself there are a few things you need to do.
+
+- Download the data from the 2 sources 
+- Upload the data to S3 (include AWS CLI2 code?)
+- Make sure Airflow is up and running
+- Make sure you have an active Spark cluster on EMR 
+- Make sure you set the right credentials in Airflow
+
+Once you are ready and the DAG is loaded correctly in Airflow, simply unpause the DAG and execute. 
+
+`show Airflow UI / DAG flow`
 
 [yelp]: https://www.yelp.com/dataset
 [ghcn]: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html
