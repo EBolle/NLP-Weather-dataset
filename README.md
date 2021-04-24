@@ -17,8 +17,8 @@ To acknowledge the specific version of the GHCN dataset hereby the official cita
 R.S. Vose, B.E.Gleason, and T.G. Houston, 2012: Global Historical Climatology Network - 
 Daily (GHCN-Daily), Version 3.26. NOAA National Climatic Data Center. 
 
-From each source we take a subset of the available data, and to give you an idea of what to expect the number of rows /
-records is included.
+From each source we take a subset of the available data, and to give you an idea of what to expect the number of records /
+rows is included.
 
 **The Yelp Open Dataset**
 - business.json (160.585 records)
@@ -61,7 +61,7 @@ between 2004-2021. Since GHCN provides weather data globally, we need to filter 
 Due to the size of the data we will be utilizing Spark on EMR (AWS). Note that if you do not want to use Spark on EMR
 I have included some code snippets in /local_python which allow you to process most of the data locally, even if you have 
 a computer with low memory. However, once you want to join these processed data sources it becomes very tedious to do that
-locally due to the size of the data. Therefore, I would recommend to use Spark om EMR.
+locally due to the size of the data. Therefore, I would recommend to use Spark on EMR.
 
 ## Dataflow
 
@@ -69,7 +69,7 @@ Show a very simple diagram with S3 -> Spark on EMR -> S3, wrapped in Airflow.
 
 ## Instructions
 
-To execute this pipeline yourself there are a few things you need to do.
+To execute the pipeline yourself there are a few things you need to do.
 
 - Download the data from the 2 sources 
 - Upload the data to S3 (include AWS CLI2 code?)
