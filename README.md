@@ -63,7 +63,7 @@ I have included some code snippets in /local_python which allow you to process m
 a computer with low memory. However, once you want to join these processed data sources it becomes very tedious to do that
 locally due to the size of the data. Therefore, I would recommend to use Spark on EMR.
 
-## Pythagoras
+## Haverstine
 
 
 
