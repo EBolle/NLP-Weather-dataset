@@ -41,7 +41,7 @@ The final dataset looks as follows:
 
 From the Yelp source we retrieve the location (latitude, longitude) of the business for which the review was written,
 and the date of writing of the review. The review dates ranges from 2004-2021. To assure the quality of the review we
-only include reviews of users with more than 25 useful reviews (top 20% range). 
+only include reviews of users with more than 25 useful reviews (top 15% range). 
 
 **GHCN**
 
@@ -63,9 +63,13 @@ I have included some code snippets in /local_python which allow you to process m
 a computer with low memory. However, once you want to join these processed data sources it becomes very tedious to do that
 locally due to the size of the data. Therefore, I would recommend to use Spark on EMR.
 
+## Pythagoras
+
+
+
 ## Dataflow
 
-Show a very simple diagram with S3 -> Spark on EMR -> S3, wrapped in Airflow.
+Show a very simple diagram with Yelp / GHCN -> Local -> S3 -> Spark on EMR -> S3, wrapped in Airflow.
 
 ## Instructions
 
