@@ -1,5 +1,6 @@
 """Main script which executes the full ETL pipeline."""
 
+
 import configparser
 from haverstine_distance import udf_get_distance
 from pyspark.sql import SparkSession
@@ -115,10 +116,10 @@ def create_review(spark, review_path: str, user_path: str) -> DataFrame:
     - the business must be open
     - only review from credible users are considered (> 25 useful reviews, top 15%)
 
-    :param spark:
-    :param review_path:
-    :param user_path:
-    :return:
+    Arguments:
+
+    Returns:
+
     """
     user = (spark
         .read
@@ -189,11 +190,20 @@ def create_yearly_weather(spark,
     return yearly_weather_pivot
 
 
-def create_final_table():
+def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather: DataFrame) -> DataFrame:
+    """
+    Combines the 3 dataframes from step 1-3 to create the final table.
+
+    Arguments:
+
+    Returns:
+
+    """
     pass
 
 
 def write_final_table():
+    """Writes the final table back to S3, you can modify the exact location in settings.cfg"""
     pass
 
 

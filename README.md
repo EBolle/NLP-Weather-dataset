@@ -34,7 +34,7 @@ Uncompressed these files contain more than 30GB of data.
 ## The data model
 
 The data model provides insights into the steps taken to go from the raw data to the final table for the NLP researchers.
-You can find a detailed description in the [documentation folder](link_to_data_model)
+You can find a detailed description in the [documentation folder](documentation_md).
 
 ## Transformations
 
@@ -92,3 +92,4 @@ Once you are ready and the DAG is loaded correctly in Airflow, simply unpause th
 
 [yelp]: https://www.yelp.com/dataset
 [ghcn]: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html
+[documentation_md]: https://github.com/EBolle/NLP-Weather-dataset/blob/main/documentation/data_model.MD
