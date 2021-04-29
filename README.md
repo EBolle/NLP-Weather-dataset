@@ -8,8 +8,8 @@ there is a relation between written text and the weather.
 
 The data originates from 2 sources of publicly available data:
 
-- [The Yelp Open Dataset](yelp)
-- [Global Historical Climatology Network (GHCN)](ghcn)
+- [The Yelp Open Dataset][yelp]
+- [Global Historical Climatology Network (GHCN)][ghcn]
 
 To acknowledge the specific version of the GHCN dataset hereby the official citation:
 
@@ -34,7 +34,7 @@ Uncompressed these files contain more than 30GB of data.
 ## The data model
 
 The data model provides insights into the steps taken to go from the raw data to the final table for the NLP researchers.
-You can find a detailed description in the [documentation folder](documentation_md).
+You can find a detailed description in the [documentation folder][documentation_md].
 
 ## Transformations
 
