@@ -4,8 +4,8 @@ import configparser
 from haverstine_distance import udf_get_distance
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import (col, broadcast, to_date)
-from pyspark.sql.types import DoubleType, StructType
+from pyspark.sql.functions import (col, concat_ws, broadcast, first, substring, to_date)
+from pyspark.sql.types import DoubleType, IntegerType, StructType
 from schemas import yearly_weather_schema
 
 config = configparser.ConfigParser()
@@ -19,6 +19,7 @@ review_path = config['PATHS']['review']
 user_path = config['PATHS']['user']
 
 yearly_weather_path = config['PATHS']['yearly_weather']
+elements_to_keep = config['PARAMETERS']['weather_elements']
 
 
 def main():
@@ -28,8 +29,10 @@ def main():
 
     distances = create_distances(spark, business_path, us_stations_path, max_distance)
     review = create_review(spark, review_path, user_path)
-    yearly_weather = create_yearly_weather(spark, yearly_weather_path, yearly_weather_schema)
+    yearly_weather = create_yearly_weather(spark, yearly_weather_path, yearly_weather_schema, elements_to_keep)
+    final_table = create_final_table()
 
+    write_final_table(final_table)
 
     spark.stop()
 
@@ -50,6 +53,11 @@ def create_distances(spark, business_path: str, us_stations_path: str, max_dista
     """
     Combines the business.json and us_stations.txt file to create a dataframe with the closest weather stations
     to the local business based on the `max_distance` parameter.
+
+    Arguments:
+
+    Returns:
+
     """
     business = (spark
         .read
@@ -144,14 +152,48 @@ def create_review(spark, review_path: str, user_path: str) -> DataFrame:
     return review
 
 
-def create_yearly_weather(spark, yearly_weather_path: str, yearly_weather_schema: StructType) -> DataFrame:
+def create_yearly_weather(spark,
+                          yearly_weather_path: str,
+                          yearly_weather_schema: StructType,
+                          elements_to_keep: list) -> DataFrame:
     """
+    Reads in 18 years of daily weather reports throughout the world. After filtering on US stations only, and keeping
+    only the most prevalent key weather metrics, the dataframe needs to be pivotted so it can be easily joined with
+    the review and distances dataframes.
 
-    :param spark:
-    :param yearly_weather_path:
-    :param yearly_weather_schema:
-    :return:
+    Arguments:
+
+    Returns:
     """
+    yearly_weather = (spark
+        .read
+        .csv(yearly_weather_path, header=False, schema=yearly_weather_schema)
+        .filter(col('element').isin(elements_to_keep))
+        .filter(col('station_id').startswith('US'))
+        .withColumn('year', substring(col('date'), 1, 4))
+        .withColumn('month', substring(col('date'), 5, 2))
+        .withColumn('day', substring(col('date'), 7, 2))
+        .withColumn('weather_date', to_date(concat_ws('-', col('year'), col('month'), col('day'))))
+        .select(col('station_id'),
+                col('weather_date'),
+                col('element'),
+                col('value').cast(IntegerType()))
+    )
+
+    yearly_weather_pivot = (yearly_weather
+        .groupby('station_id', 'weather_date')
+        .pivot('element')
+        .agg(first('value'))
+    )
+
+    return yearly_weather_pivot
+
+
+def create_final_table():
+    pass
+
+
+def write_final_table():
     pass
 
 
