@@ -1,7 +1,7 @@
 """This module contains the schema of the song and log data on S3."""
 
 
-from pyspark.sql.types import StructType, StringType
+from pyspark.sql.types import StructField, StructType, StringType
 
 
 yearly_weather_schema = (StructType([

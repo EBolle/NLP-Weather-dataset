@@ -5,7 +5,7 @@ import configparser
 from haverstine_distance import udf_get_distance
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import (col, concat_ws, broadcast, first, substring, to_date)
+from pyspark.sql.functions import (avg, col, concat_ws, broadcast, first, substring, to_date, year)
 from pyspark.sql.types import DoubleType, IntegerType, StructType
 from schemas import yearly_weather_schema
 
@@ -21,6 +21,8 @@ user_path = config['PATHS']['user']
 
 yearly_weather_path = config['PATHS']['yearly_weather']
 elements_to_keep = config['PARAMETERS']['weather_elements']
+
+output_path = config['PATHS']['output']
 
 
 def main():
@@ -132,6 +134,7 @@ def create_review(spark, review_path: str, user_path: str) -> DataFrame:
         .read
         .json(review_path)
         .withColumn('review_date', to_date(col('date')))
+        .filter(year(col('review_date')) == 2020)
         .select(col('business_id'),
                 col('user_id'),
                 col('text'),
@@ -142,10 +145,7 @@ def create_review(spark, review_path: str, user_path: str) -> DataFrame:
 
     review = (review_raw
         .join(broadcast(user), on=user_review_join_condition, how='inner')
-        .select(col('city'),
-                col('state'),
-                col('latitude'),
-                col('longitude'),
+        .select(col('business_id'),
                 col('text'),
                 col('review_date'))
     )
@@ -190,7 +190,7 @@ def create_yearly_weather(spark,
     return yearly_weather_pivot
 
 
-def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather: DataFrame) -> DataFrame:
+def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_pivot: DataFrame) -> DataFrame:
     """
     Combines the 3 dataframes from step 1-3 to create the final table.
 
@@ -199,12 +199,40 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather: 
     Returns:
 
     """
-    pass
+    distance_review_join_condition = [distances.business_id == review.business_id]
+
+    distances_review = (distances
+                        .join(review, on=distance_review_join_condition, how='inner')
+                        .select(col('city'),
+                                col('state'),
+                                col('text'),
+                                col('review_date'),
+                                col('us_station_id'))
+                        )
+
+    distances_review_weather_join_condition = [distances_review.review_date == yearly_weather_pivot.weather_date,
+                                               distances_review.us_station_id == yearly_weather_pivot.station_id]
+
+    final_table = (distances_review
+                   .join(yearly_weather_pivot, on=distances_review_weather_join_condition, how='inner')
+                   .groupby('city', 'state', 'review_date', 'text')
+                   .agg(avg('PRCP'),
+                        avg('SNOW'),
+                        avg('SNWD'),
+                        avg('TMAX'),
+                        avg('TMIN'))
+                   )
+
+    return final_table
 
 
-def write_final_table():
+def write_final_table(final_table: DataFrame):
     """Writes the final table back to S3, you can modify the exact location in settings.cfg"""
-    pass
+    (final_table
+     .write
+     .option('compression', 'gzip')
+     .csv(yearly_weather_path)
+     )
 
 
 if __name__ == '__main__':
