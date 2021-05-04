@@ -12,7 +12,6 @@ from schemas import yearly_weather_schema
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
-elements_to_keep = config['PARAMETERS']['weather_elements']
 max_distance = int(config['PARAMETERS']['max_distance'])
 s3_bucket = config['AWS']['s3_bucket']
 
@@ -44,7 +43,7 @@ def create_spark_session():
     return spark
 
 
-def create_distances(spark, business_path: str, us_stations_path: str, max_distance: int) -> DataFrame:
+def create_distances(spark) -> DataFrame:
     """
     Combines the business.json and us_stations.txt file to create a dataframe with the closest weather stations
     to the local business based on the `max_distance` parameter.
@@ -164,6 +163,7 @@ def create_yearly_weather(spark) -> DataFrame:
     Returns:
     """
     yearly_weather_path = f"s3://{s3_bucket}/ghcn/year_2020.csv.gz"
+    elements_to_keep = ['PRCP', 'SNOW', 'SNWD', 'TMAX', 'TMIN']
 
     yearly_weather = (spark
         .read
