@@ -39,23 +39,25 @@ Show a very simple diagram with Yelp / GHCN -> Local -> S3 -> Spark on EMR -> S3
 
 ## Instructions
 
-To execute the pipeline yourself there are a few things you need to do.
+To execute the pipeline there are a few things you need to do.
 
 - Download the data from the 2 sources 
 - Upload the data to S3 (data_upload/local_to_s3.py might be helpful) 
-- Make sure you have an active Spark cluster on EMR 
-- Configure the setting.cfg file
+- Make sure you have an active Spark cluster on EMR (AWS)
+- Modify settings.cfg
 - Execute
 
 ### Upload the data to S3
 
-In this section I will explain how to upload the files to S3 based on the local_to_s3.py script, there are 3 steps you 
-need to take:
+There are 5 steps you need to take to upload the local data to a S3 bucket:
 
-- create 2 folders (e.g., `ghcn` and `yelp`)
-- gzip each file you want to upload to S3
-- create a bucket on S3
-- adjust the settings.cfg file accordingly
+- Create 2 local folders (e.g., `ghcn` and `yelp`)
+- Gzip each file you want to upload to S3 and put these files in the correct folder
+- Create a bucket on S3
+- Adjust the settings.cfg file accordingly
+- Run the script
+
+<plaatjes :)>
 
 ### Spark on EMR
 
