@@ -231,7 +231,8 @@ def write_final_table(final_table: DataFrame):
     (final_table
      .write
      .option('compression', 'gzip')
-     .csv(yearly_weather_path)
+     .mode('overwrite')
+     .json(output_path)
      )
 
 
