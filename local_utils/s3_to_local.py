@@ -25,4 +25,5 @@ for object in nlp_bucket.objects.filter(Prefix='output'):
         temp_df = pd.read_json(file_path, lines=True)
         df = df.append(temp_df)
 
+# a output folder should be created if not exist /output..
 df.to_json(f"{output_folder}/nlp_weather_dataset.json.gz", orient='records', compression='gzip')
