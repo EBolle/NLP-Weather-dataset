@@ -2,7 +2,7 @@
 
 
 import configparser
-from haverstine_distance import udf_get_distance
+from haversine_distance import udf_get_distance
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import avg, col, concat_ws, broadcast, first, substring, to_date, year
@@ -215,11 +215,11 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_p
     final_table = (distances_review
        .join(yearly_weather_pivot, on=distances_review_weather_join_condition, how='inner')
        .groupby('city', 'state', 'review_date', 'text')
-       .agg(avg('PRCP'),
-            avg('SNOW'),
-            avg('SNWD'),
-            avg('TMAX'),
-            avg('TMIN'))
+       .agg(avg('PRCP').alias('prcp'),
+            avg('SNOW').alias('snow'),
+            avg('SNWD').alias('snwd'),
+            avg('TMAX').alias('tmax'),
+            avg('TMIN').alias('tmin'))
     )
 
     return final_table
@@ -227,7 +227,7 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_p
 
 def write_final_table(final_table: DataFrame):
     """Writes the final table back to S3, you can modify the exact location in settings.cfg"""
-    output_path = f"s3://{s3_bucket}/output/final_table.json.gz"
+    output_path = f"s3://{s3_bucket}/output/"
 
     final_table_write = (final_table
          .write
