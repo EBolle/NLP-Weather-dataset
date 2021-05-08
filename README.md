@@ -1,7 +1,7 @@
 # NLP-Weather-dataset
 
 This project contains a data pipeline that creates a dataset of reviews of local businesses in the United States, and
-the local weather on the day of writing of that review. We believe this data can help NLP researchers to examine whether
+the local weather on the day of writing of that review. This dataset can help NLP researchers to examine whether
 there is a relationship between written text and the weather.
 
 ## The data
@@ -25,7 +25,7 @@ From each source we only take a subset of the available data.
 - user.json 
 
 **GHCN**
-- /by_year .csv files from ????-2021 
+- /by_year .csv files from 2019-2021 
 - us_stations.txt which is a modified version of ghcn-stations.txt
 
 ## The data model
@@ -35,33 +35,59 @@ detailed description in the [documentation folder][documentation_md].
 
 ## Dataflow
 
-Show a very simple diagram with Yelp / GHCN -> Local -> S3 -> Spark on EMR -> S3, wrapped in Airflow.
+Diagrams picture local [yelp, ghcn] -> python script local_to_s3 -> spark on emr -> python script s3_to_local -> zipped
+dataset.
 
 ## Instructions
 
-To execute the pipeline there are a few things you need to do.
+To execute the pipeline there are a few things you need to do. Note that if you want to upload and download the files
+manually to S3 you can skip step 4-6 & 9. 
 
-- Download the data from the 2 sources 
-- Modify settings.cfg
-- Upload the data, Spark script, helper modules and settings to S3 
-- Activate a Spark cluster on EMR with access to the S3 bucket
-- Connect to the Spark cluster with ssh and submit the spark job
-- Download the output .json files from S3 to a local merged and zipped nlp-weather dataset
+1. Clone this project
+2. Add 2 folders to the local project: /ghcn & /yelp
+3. Download the data from the 2 sources in `The Data` section into /ghcn & /yelp
+4. Modify settings.cfg 
+5. Install and activate the virtual environment based on the `environment.yml` file
+6. Execute `local_utils/local_to_s3.py` to upload the data and the spark_app files to S3
 
-### Download the data from the 2 sources 
+Make sure you are in the top-level directory of the project and execute the following command:
 
-There are 5 steps you need to take to upload the local data to a S3 bucket:
+```bash
+python local_utils/local_to_s3.py
+```
 
-- Create 2 local folders (e.g., `ghcn` and `yelp`)
-- Gzip each file you want to upload to S3 and put these files in the correct folder
-- Create a bucket on S3
-- Adjust the settings.cfg file accordingly
-- Run the script
+7. Activate a Spark cluster on EMR with access to the S3 bucket
 
-<plaatjes :)>
+The spark_app was successfully tested with the following EMR settings:
 
-### Spark on EMR
+```bash
+EMR cluster CLI export here
+```
 
+Make sure that the Cluster can access the S3 bucket with the data and the spark_app files. 
+
+8. Connect to the Spark cluster with ssh, sync the spark_app folder with S3, and submit the spark job.
+
+```bash
+ssh -i <location to your .pem file> hadoop@<master-public-dns-name>
+```
+
+Once connected to the cluster enter the following bash commands:
+
+```bash
+aws s3 sync s3://<your bucket>/spark_app .
+spark-submit --master yarn --conf spark.dynamicAllocation.enabled=true --py-files haversine.py main.py
+```
+
+9. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
+
+```bash
+python local_utils/s3_to_local.py
+```
+
+## Contact
+
+In case of any questions or remarks please contact me via LinkedIn or open a pull request.
 
 [yelp]: https://www.yelp.com/dataset
 [ghcn]: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html
