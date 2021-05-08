@@ -28,7 +28,7 @@ def main() -> None:
     logger.info("*** local_to_s3.py script started... ***")
 
     client = get_s3_client()
-    create_bucket_on_S3(client)
+    create_bucket_on_s3(client)
     upload_files(client)
 
     logger.info("*** Upload to S3 complete, you are now ready to proceed with the execution of the Spark app...")
@@ -42,7 +42,7 @@ def get_s3_client():
     return client
 
 
-def create_bucket_on_S3(client) -> None:
+def create_bucket_on_s3(client) -> None:
     """Creates a bucket on S3 based on the s3_bucket and s3_location variables in settings.cfg"""
     logger.info(f"Creating a new bucket on S3 called {s3_bucket} located at {s3_location}...")
 
@@ -86,3 +86,7 @@ def upload_files(client) -> None:
     for idx, file in enumerate(spark_app_files, start=1):
         logger.debug(f"Uploading the spark_app files, this should not take long...")
         client.upload_file(Filename=str(file), Bucket=s3_bucket, Key=f'spark_app/{file.name}')
+
+
+if __name__ == '__main__':
+    main()
