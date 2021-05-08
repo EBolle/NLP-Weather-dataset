@@ -54,6 +54,16 @@ def create_bucket_on_S3(client) -> None:
         },
     )
 
+    response_public = client.put_public_access_block(
+        Bucket=s3_bucket,
+        PublicAccessBlockConfiguration={
+            'BlockPublicAcls': True,
+            'IgnorePublicAcls': True,
+            'BlockPublicPolicy': True,
+            'RestrictPublicBuckets': True
+        },
+    )
+
 
 def upload_files(client) -> None:
     """Uploads the ylep, ghcn, and spark app files to the S3 bucket."""
