@@ -42,12 +42,13 @@ Show a very simple diagram with Yelp / GHCN -> Local -> S3 -> Spark on EMR -> S3
 To execute the pipeline there are a few things you need to do.
 
 - Download the data from the 2 sources 
-- Upload the data to S3 (data_upload/local_to_s3.py might be helpful) 
-- Make sure you have an active Spark cluster on EMR (AWS)
 - Modify settings.cfg
-- Execute
+- Upload the data, Spark script, helper modules and settings to S3 
+- Activate a Spark cluster on EMR with access to the S3 bucket
+- Connect to the Spark cluster with ssh and submit the spark job
+- Download the output .json files from S3 to a local merged and zipped nlp-weather dataset
 
-### Upload the data to S3
+### Download the data from the 2 sources 
 
 There are 5 steps you need to take to upload the local data to a S3 bucket:
 
