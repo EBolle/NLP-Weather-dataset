@@ -31,11 +31,11 @@ def main() -> None:
     create_bucket_on_s3(client)
     upload_files(client)
 
-    logger.info("*** Upload to S3 complete, you are now ready to proceed with the execution of the Spark app...")
+    logger.info("*** Upload to S3 complete, you are now ready to proceed with the execution of the Spark app... ***")
 
 
 def get_s3_client():
-    """Returns an S3 client, if you are not using credentials in .aws set your credentials here."""
+    """Returns an S3 client, if you are not using credentials in a .aws folder set your credentials here."""
     logger.info("Getting an S3 client...")
     client = boto3.client('s3')
 
