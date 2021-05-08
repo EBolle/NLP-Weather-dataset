@@ -142,8 +142,6 @@ cython_debug/
 .idea
 
 # Notebook folder for development and exploration
-/notebooks/
-/src/dashboard_get_started.py
-/src/uber_app.py
-/data/
 /output/
+/ghcn/
+/yelp/
