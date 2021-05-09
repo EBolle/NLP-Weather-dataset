@@ -28,6 +28,8 @@ From each source we only take a subset of the available data.
 - /by_year .csv files from 2019-2021 
 - us_stations.txt which is a modified version of ghcn-stations.txt
 
+You can find more details about the data in the [data dictionary][data_dictionary].
+
 ## The data model
 
 The data model provides insights into the steps taken to go from the raw data to the final table. You can find a 
@@ -48,7 +50,16 @@ manually to S3 you can skip step 4-6 & 9.
 3. Download the data from the 2 sources in `The Data` section into /ghcn & /yelp
 4. Modify settings.cfg 
 5. Install and activate the virtual environment based on the `environment.yml` file
-6. Execute `local_utils/local_to_s3.py` to upload the data and the spark_app files to S3
+
+```bash
+conda env create -f environment.yml
+conda activate nlp_weather
+```
+
+You can also reproduce the diagram from the `Dataflow` section with this environment, the code can be found in
+`dataflow.py`.
+
+6. Upload the data and the spark_app files to S3
 
 Make sure you are in the top-level directory of the project and execute the following command:
 
@@ -91,4 +102,5 @@ In case of any questions or remarks please contact me via LinkedIn or open a pul
 
 [yelp]: https://www.yelp.com/dataset
 [ghcn]: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html
+[data_dictionary]: https://github.com/EBolle/NLP-Weather-dataset/blob/main/documentation/data_dictionary.MD
 [documentation_md]: https://github.com/EBolle/NLP-Weather-dataset/blob/main/documentation/data_model.MD
