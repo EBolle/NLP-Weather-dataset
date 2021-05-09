@@ -26,7 +26,7 @@ From each source we only take a subset of the available data.
 
 **GHCN**
 - /by_year .csv files from 2019-2021 
-- us_stations.txt which is a modified version of ghcn-stations.txt
+- stations.txt which is a modified version of ghcnd-stations.txt
 
 You can find more details about the data in the [data dictionary][data_dictionary].
 
