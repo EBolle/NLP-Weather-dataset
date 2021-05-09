@@ -37,8 +37,11 @@ detailed description in the [documentation folder][documentation_md].
 
 ## Dataflow
 
-Diagrams picture local [yelp, ghcn] -> python script local_to_s3 -> spark on emr -> python script s3_to_local -> zipped
-dataset.
+The dataflow can be visually depicted as:
+
+<img src="https://user-images.githubusercontent.com/49920622/117587202-1c2fe180-b11d-11eb-849d-28ec3a6274dc.png">
+
+If you want to re-create this image yourself have a look at `dataflow.py`.
 
 ## Instructions
 
