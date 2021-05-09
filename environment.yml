@@ -6,3 +6,6 @@ dependencies:
  - jupyter=1.0.0
  - pandas=1.2.4
  - conda-forge::s3fs=2021.4.0
+ - pip
+ - pip:
+   - diagrams==0.19.1
