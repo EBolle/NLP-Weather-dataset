@@ -12,6 +12,7 @@ from schemas import yearly_weather_schema
 config = configparser.ConfigParser()
 config.read('settings.cfg')
 
+compliment_writer = int(config['PARAMETERS']['compliment_writer'])
 max_distance = int(config['PARAMETERS']['max_distance'])
 s3_bucket = config['AWS']['s3_bucket']
 
@@ -123,7 +124,7 @@ def create_review(spark) -> DataFrame:
     user = (spark
         .read
         .json(user_path)
-        .filter(col('useful') > 25)
+        .filter(col('compliment_writer') > compliment_writer)
         .select(col('user_id'))
     )
 
