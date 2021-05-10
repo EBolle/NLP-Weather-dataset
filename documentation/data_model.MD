@@ -39,11 +39,21 @@ number of calculations to a minimum. Please note that I have not developed the U
 
 ## 2. Create the review dataframe
 
-The goal of this step is to retrieve the reviews of trustworthy users, and to be able to join on date and business id
-in a later step. To control for user quality only users with more than 25 useful reviews are considered (top 15%), and
-then joined with the raw review file.
+This step is straightforward. To keep only the relevant reviews for the NLP research a join is performed with the user
+file to keep only the most complimented users in scope. This increases the data quality while also making sure that only
+relevant data is processed. This same logic is applied on the years of reviews that are taken into consideration (2019
+-2021, instead of all the reviews from 2004 onwards). 
 
-<insert dbdiagram>.
+## 3. Create the yearly weather dataframe
+
+
+
+
+
+
+
+
+
 
 ## 3. Prepare the yearly GHCN weather data
 
