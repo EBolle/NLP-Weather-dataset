@@ -46,49 +46,43 @@ relevant data is processed. This same logic is applied on the years of reviews t
 
 ## 3. Create the yearly weather dataframe
 
+Although there are no joins in this step, up to this point it is computationally the most expensive step. The cleaning 
+and transformation steps of the weather data are straightforward, until the 'pivot' of the dataframe. 
 
+Basically the original data is in long format, while we want the data in wide format. The reason for this is that we 
+want 1 row per review with the (aggregated) weather data, since most data-science algorithms (including NLP) operate 
+on this type of data format (1 row is 1 observation, 1 column is the dependent variable, the others are independent).
 
+Since the data is imported into partitions in an unordered fashion, this step creates *a lot* of shuffle operations.
+The combination of the columns `station_id` and `weather_date` needs to searched, aggregated and send to new partitions
+to do the first() calculation for each element per combination. A solution to increase the speed of this step is to
+partition the data by `station_id` and `weather_date` before doing the `pivot`. However, since I only use this dataframe
+once, it does not speed up the calculations. Another solution would be to store the data in .parquet form on S3, already
+partitioned by `station_id` and `weather_date` and then imported. However, the overhead of creating these partitions 
+caused by the massive I/O operations is not worth it the relatively small one-time pipeline. 
 
+### 4. Bring it all together
 
+The last step but definitely not least. There are 3 expensive operations in this final step:
 
+- join the distances dataframe with the review dataframe into a new distances_review dataframe
+- join the newly created distances_review dataframe with the pivoted weather dataframe into the final table
+- aggregate the final table based on `('city', 'state', 'review_date', 'text')` and calculate the average value for
+each of these elements
 
+All together it takes ~1 hour to process these steps with the EMR setup as mentioned in the README. Although there are a 
+few optimization improvements I have made with Spark configuration settings and filters, the real improvements (e.g., 
+partitioning, storing and importing the data in the right partitions) are not worth it given that this is not a 
+recurring pipeline. 
 
+Regardless, the end result is an interesting dataset on which numerous (NLP) research could be performed, e.g.:
 
+- Sentiment analysis: does the weather influence the mood of the user that is writing the review? 
+- Text analysis: can you determine in which state someone lives dependent on their review?
+- Text analysis: are their lexical differences between cities in 1 state?
 
-## 3. Prepare the yearly GHCN weather data
-
-The goal of this step is to retrieve daily weather data between 2004-2021 in a format so it can be easily used to join
-on the review and the distance data. After joining it should be easy to aggregate the key weather metrics in order to
-create the final table. To prepare the GHCN daily weather data no joins were needed, but this step is computationally
-the most difficult one.
-
-### Challenges
-
-The first challenge is to get the data in the correct shape, a few things needed to be done:
-
-- only retrieve weather data from the US
-- make sure `state`, `latitude`, and `longitude` are not null
-- wrangle the date string (e.g., '20200401') to the same actual data format as the review file (2020-04-01)
-- keep only the top weather 6 weather metrics to prevent extreme sparsity in the final table and unnecessary computations
-
-The second challenge is to get the data from a long to a wide format. In the final step we want to have all the weather
-information on 1 row for 1 review on 1 specific date. Therefore we need to pivot the table. Although code wise this is 
-easy, it is actually a very expensive transformation. Since this is also the step were most data is processed 
-(+20GB uncompressed) it takes quite a while to get all the data in the correct shape. On the Spark cluster it took ~y
-minutes.
-
-When these steps are completed, this is the transformation.
-
-<show table old format>
-<show table new format>
-
-## 4. Bring it all together
-
-Finally, we can join the output from the first 3 steps to create the final table. Basically it is nothing more than a join
-and an aggregation.
-
-<show end result>.
-
+The columns `('city', 'state', 'review_date')` were left in the dataset on purpose, so it would be easy for researchers
+to further extend the dataset with other (meta) data. 
 
 [haversine_wiki]: https://en.wikipedia.org/wiki/Haversine_formula
 [haversine_medium]: https://medium.com/@nikolasbielski/using-a-custom-udf-in-pyspark-to-compute-haversine-distances-d877b77b4b18
