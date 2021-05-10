@@ -49,6 +49,9 @@ def get_s3_metadata(s3_bucket):
         count += 1
         total_mb_size += object.size
 
+    if count == 0:
+        raise Warning(f"The {s3_bucket} is empty, please make sure you entered the right bucket name.")
+
     return count, total_mb_size
 
 

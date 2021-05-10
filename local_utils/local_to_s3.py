@@ -73,6 +73,10 @@ def upload_files(s3_client) -> None:
     ghcn_files = [path for path in ghcn_folder.iterdir()]
     spark_app_files = [path for path in Path('.') / 'spark_app']
 
+    for list in [yelp_files, ghcn_files, spark_app_files]:
+        if not list:
+            raise Warning(f"The {list} directory is empty, please check the directory path and the actual data.")
+
     for idx, file in enumerate(yelp_files, start=1):
         file_size = round(file.stat().st_size * 1e6)
         logger.debug(f"Uploading yelp file {file.name} ({idx}/{len(yelp_files)}), this file is {file_size} MB...")

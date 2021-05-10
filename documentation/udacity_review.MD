@@ -17,12 +17,12 @@ the current setup leverages the (AWS) cloud to store and process the data.
 increasing the data 100x times is still a fraction of what is possible in S3. Dependent on te compute cluster S3 can 
 handle up to 3.500 requests per second to add data and up to 5.500 requests per second to retrieve data.
 This project currently handles approximately 5GB in compressed format, handling 500GB would still be very easy to handle
-on S3 [source][s3].
+on S3 ([source][s3]).
 
 - processing: for this step Spark on EMR is used. From their [website][spark] you can read that Spark can handle up to
 petabytes of data and that many organizations use thousands of clusters to handle their data processing jobs. These 
 clusters can be flexibly handled by EMR. Therefore, to process 500GB of data I would stick to Spark on EMR. However, 
-dependent on performance I would consider using more nodes and/or choosing for bigger nodes with better performance.
+dependent on performance I would consider using more nodes and/or choosing bigger nodes with better performance.
 
 **The pipelines would be run on a daily basis by 7 am every day**
 
