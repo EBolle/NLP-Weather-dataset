@@ -1,46 +1,43 @@
 # Data model
 
-To go from the raw data to the final table 4 steps have to be taken. Each step involves 1 or more files of the Yelp
-and GHCN sources. The steps are described in detail in the same way as they are processed in the data pipeline. This 
-should give you a clear idea of all the data transformations.
+To get to the nlp-weather dataset which NLP researchers can use, quite a few steps have to be taken. This page explains
+each step in detail. The guideline for this page is the `main.py` spark script.
 
-1. Combine the Yelp business file with the GHCN weather stations. 
-2. Prepare the Yelp review file with the help of the Yelp user file 
-3. Prepare the yearly GHCN weather data
+1. Create a distances dataframe
+2. Create the review dataframe
+3. Create the yearly weather dataframe
 4. Bring it all together
 
-## 1. Combine the Yelp business file with the GHCN weather stations into the distances dataframe
+It must be said that there a 2 strong assumptions in this project that you must take into account.
 
-The goal of this step is to retrieve weather stations in close proximity to the local businesses. Therefore we combine
-the business and weather station files, and calculate the haversine distances for each business and weather station
-within the same state. The relevant weather stations are filtered based on the `max_distance` parameter from `settings.cfg`.
+- The reviews are written by users, not by businesses. We do not have the actual longitude and latitude coordinates of 
+the place where the review was written, but we assume the review was written in relatively close proximity to the business
+location
+- Although we know the date of the review and the weather, we do not have the timestamps. The weather is therefore an
+average of the weather of that day, not on the exact moment of writing
 
-Since `state`, `latitude`, and `longitude` are all essential for this step there are filters in place for both files in 
-the Spark code. 
+## 1. Create a distances dataframe
 
-<insert dbdiagram>.
+For each business location we need to know which weather stations are in closest proximity. The proximity is calculated
+with the help of the [haversine distance][haversine_wiki], and controlled by the the `max_distance` parameter in
+`settings.cfg`. There are 2 steps involved to create the distances dataframe
 
-### Haversine distance
+- Join the Yelp business file and the GHCN weather stations file 
+- Calculate the haversine distance for each combination of business and weather station
 
-Since we are calculating the distance between 2 geographical coordinates on a sphere (the Earth) we choose to use the
-haversine distance. All credits should go to [this medium post](haversine), I merely applied the logic. 
+Although both files are relatively small (160.585 rows and 118.493 rows respectively), a full join would result in a huge
+dataframe which would seriously slow down the performance. Therefore, and mostly for logical reasons, the 2 files are 
+joined based on state. This join condition allows for relevant and far less distance calculations. Ideally, you would also
+take weather stations into account that are just over the border in another state, but this is out of scope for this 
+project.
 
-### Challenges
+Since both files are small the join itself is computationally not that expensive since we can broadcast the stations 
+file to each node. The haversine distance did present a challenge since it is a user-defined function (UDF). This is a
+common bottleneck in Spark performance but to my knowledge there is not a way to work around this, except to keep the
+number of calculations to a minimum. Please note that I have not developed the UDF myself, all the credits should go to
+[this medium post][haversine_medium], I have merely applied the logic.
 
-Although this part seems straightforward, it actually comes with a computational challenge. Since we join these 2 tables
-on `state`, the resulting dataframe becomes large.
-
-n_rows after filtering and cleaning:
-- business.json: 123.248
-- us_weather_stations.txt: 65.170
-
-n_rows after joining on state: 228.499.768
-
-The computational challenge lies in the fact that for > 228M rows we need to calculate the haversine distance, with a
-user-defined function (udf). UDFs are notorious bottlenecks in Spark code but we cannot circumvent this function without
-sacrificing too much data quality. On the Spark cluster it took ~x minutes to create this dataframe.
-
-## 2. Prepare the Yelp review file with the help of the Yelp user file 
+## 2. Create the review dataframe
 
 The goal of this step is to retrieve the reviews of trustworthy users, and to be able to join on date and business id
 in a later step. To control for user quality only users with more than 25 useful reviews are considered (top 15%), and
@@ -83,4 +80,5 @@ and an aggregation.
 <show end result>.
 
 
-[haversine]: https://medium.com/@nikolasbielski/using-a-custom-udf-in-pyspark-to-compute-haversine-distances-d877b77b4b18
+[haversine_wiki]: https://en.wikipedia.org/wiki/Haversine_formula
+[haversine_medium]: https://medium.com/@nikolasbielski/using-a-custom-udf-in-pyspark-to-compute-haversine-distances-d877b77b4b18
