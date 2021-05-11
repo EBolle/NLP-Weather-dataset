@@ -103,6 +103,7 @@ def create_distances(spark) -> DataFrame:
                 col('station_latitude'),
                 col('station_longitude'),
                 col('distance'))
+        .repartition(200, 'business_id')
     )
 
     return distances
@@ -148,6 +149,7 @@ def create_review(spark) -> DataFrame:
         .select(col('business_id'),
                 col('text'),
                 col('review_date'))
+        .repartition(200, 'business_id')
     )
 
     return review
@@ -179,12 +181,15 @@ def create_yearly_weather(spark) -> DataFrame:
                 col('weather_date'),
                 col('element'),
                 col('value').cast(IntegerType()))
+        .repartition(200, 'station_id', 'weather_date')
     )
 
     yearly_weather_pivot = (yearly_weather
         .groupby('station_id', 'weather_date')
         .pivot('element')
         .agg(first('value'))
+        .dropna(subset=['first(PRCP)', 'first(TMAX)', 'first(TMIN)'])
+        .repartition(200, 'station_id', 'weather_date')
     )
 
     return yearly_weather_pivot
@@ -208,6 +213,7 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_p
                 col('text'),
                 col('review_date'),
                 col('us_station_id'))
+        .repartition(200, 'us_station_id', 'review_date')
     )
 
     distances_review_weather_join_condition = [distances_review.review_date == yearly_weather_pivot.weather_date,
