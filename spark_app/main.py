@@ -38,6 +38,11 @@ def create_spark_session():
         .builder
         .appName("NLP-Weather-dataset ETL")
         .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0")
+        .config("spark.dynamicAllocation.enabled", "true")
+        .config("spark.shuffle.file.buffer", "1m")
+        .config("spark.io.compression.lz4.blockSize", "512")
+        .config("spark.shuffle.registration.timeout", 12000)
+        .config("spark.shuffle.registration.maxAttempts", 5)
         .getOrCreate()
     )
 
@@ -54,7 +59,7 @@ def create_distances(spark) -> DataFrame:
     Returns:
 
     """
-    business_path = f"s3://{s3_bucket}/yelp/business.json.gz"
+    business_path = f"s3://{s3_bucket}/yelp/yelp_academic_dataset_business.json.gz"
 
     business = (spark
         .read
@@ -69,7 +74,7 @@ def create_distances(spark) -> DataFrame:
                 col('longitude'))
     )
 
-    us_stations_path = f"s3://{s3_bucket}/ghcn/us_stations.txt.gz"
+    us_stations_path = f"s3://{s3_bucket}/ghcn/stations.txt.gz"
 
     us_stations = (spark
         .read
@@ -120,7 +125,7 @@ def create_review(spark) -> DataFrame:
     Returns:
 
     """
-    user_path = f"s3://{s3_bucket}/yelp/user.json.gz"
+    user_path = f"s3://{s3_bucket}/yelp/yelp_academic_dataset_user.json.gz"
 
     user = (spark
         .read
@@ -129,7 +134,7 @@ def create_review(spark) -> DataFrame:
         .select(col('user_id'))
     )
 
-    review_path = f"s3://{s3_bucket}/yelp/review.json.gz"
+    review_path = f"s3://{s3_bucket}/yelp/yelp_academic_dataset_review.json.gz"
 
     review_raw = (spark
         .read
@@ -165,7 +170,7 @@ def create_yearly_weather(spark) -> DataFrame:
 
     Returns:
     """
-    yearly_weather_path = f"s3://{s3_bucket}/ghcn/year_2020.csv.gz"
+    yearly_weather_path = f"s3://{s3_bucket}/ghcn/year_*"
     elements_to_keep = ['PRCP', 'SNOW', 'SNWD', 'TMAX', 'TMIN']
 
     yearly_weather = (spark
@@ -188,7 +193,7 @@ def create_yearly_weather(spark) -> DataFrame:
         .groupby('station_id', 'weather_date')
         .pivot('element')
         .agg(first('value'))
-        .dropna(subset=['first(PRCP)', 'first(TMAX)', 'first(TMIN)'])
+        .dropna(subset=['PRCP', 'TMAX', 'TMIN'])
         .repartition(200, 'station_id', 'weather_date')
     )
 
@@ -227,6 +232,7 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_p
             avg('SNWD').alias('snwd'),
             avg('TMAX').alias('tmax'),
             avg('TMIN').alias('tmin'))
+        .repartition(200)
     )
 
     return final_table

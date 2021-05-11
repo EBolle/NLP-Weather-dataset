@@ -88,7 +88,7 @@ Once connected to the cluster enter the following bash commands:
 
 ```bash
 aws s3 sync s3://<your bucket>/spark_app .
-spark-submit --master yarn --conf spark.dynamicAllocation.enabled=true --py-files haversine.py main.py
+spark-submit --master yarn --conf spark.dynamicAllocation.enabled=true --py-files haversine_distance.py main.py
 ```
 
 9. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
