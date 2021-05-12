@@ -102,12 +102,14 @@ If you use the script make sure you are in the top-level directory of the projec
 python local_utils/local_to_s3.py
 ```
 
+Dependent on your connection it can take quite some time before the files are uploaded to S3.
+
 9. Activate a Spark cluster on EMR with access to the S3 bucket
 
 The spark_app was successfully tested with the following setup:
 
-- emr-6.2.0
-- Spark 3.0.1
+- emr-6.3.0
+- Spark 3.0.1, Hadoop 3.2.1, YARN, Zeppelin 0.9.0
 - Master: 1x m5.xlarge
 - Core: 2x m5.xlarge
 
@@ -119,7 +121,7 @@ Make sure that the Cluster can access the S3 bucket with the data and the spark_
 ssh -i <location to your key-pair file> hadoop@<master-public-dns-name>
 ```
 
-Once connected to the cluster enter the following bash commands:
+Once connected to the cluster enter the following commands:
 
 ```bash
 aws s3 sync s3://<your bucket>/spark_app .
@@ -128,14 +130,14 @@ spark-submit --master yarn --py-files haversine_distance.py main.py
 
 11. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
 
-Once the Spark script is finished running and the files are correctly downloaded to S3, you may execute the following
-command: 
+Once the Spark script is finished and the files are correctly downloaded to S3, you may execute the following command: 
 
 ```bash
 python local_utils/s3_to_local.py
 ```
 
-This script created an `output` sub folder in the project folder with the zipped `nlp_weather_dataset`.
+This script creates an `output` subfolder in the project folder with the zipped `nlp_weather_dataset`. You are now ready
+to start your NLP research and analysis. 
 
 ## Contact
 
