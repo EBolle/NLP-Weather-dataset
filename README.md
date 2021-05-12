@@ -55,8 +55,18 @@ environment.
 2. Add 2 folders to the local cloned project: /ghcn & /yelp (optional)
 3. Download the data from the 2 sources section 
 4. Move the data into the /ghcn & /yelp folders (optional)
+
+**/ghcn**
+
+<img src="https://user-images.githubusercontent.com/49920622/118041672-5b577000-b373-11eb-8ac7-713549047b97.JPG">
+
+**/yelp**
+
+<img src="https://user-images.githubusercontent.com/49920622/118041683-60b4ba80-b373-11eb-968b-f81b33cd961f.JPG">
+
 5. Make sure to add `year_` before the file names of the GHCN yearly weather data in order for the Spark script to load
 the files correctly
+
 6. Modify settings.cfg 
 
 The `settings.cfg` file has default settings based on using the helper scripts. If you do not plan to use them make sure
