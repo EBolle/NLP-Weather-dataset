@@ -1,7 +1,7 @@
 # Data model
 
-To get to the nlp-weather dataset which NLP researchers can use, quite a few steps have to be taken. This page explains
-each step in detail. The guideline for this page is the `main.py` spark script.
+To get to the nlp-weather dataset which NLP researchers can use for actual analysis, quite a few steps have to be taken. This page explains
+each step in detail. The guideline for this page is the `main.py` Spark script.
 
 1. Create a distances dataframe
 2. Create the review dataframe
@@ -12,9 +12,9 @@ It must be said that there a 2 strong assumptions in this project that you must 
 
 - The reviews are written by users, not by businesses. We do not have the actual longitude and latitude coordinates of 
 the place where the review was written, but we assume the review was written in relatively close proximity to the business
-location
+location.
 - Although we know the date of the review and the weather, we do not have the timestamps. The weather is therefore an
-average of the weather of that day, not on the exact moment of writing
+average of the weather of that day, not on the exact moment of writing.
 
 ## 1. Create a distances dataframe
 
@@ -27,7 +27,7 @@ with the help of the [haversine distance][haversine_wiki], and controlled by the
 
 Although both files are relatively small (160.585 rows and 118.493 rows respectively), a full join would result in a huge
 dataframe which would seriously slow down the performance. Therefore, and mostly for logical reasons, the 2 files are 
-joined based on state. This join condition allows for relevant and far less distance calculations. Ideally, you would also
+joined based on state. This join condition allows for relevant and fewer distance calculations. Ideally, you would also
 take weather stations into account that are just over the border in another state, but this is out of scope for this 
 project.
 
@@ -41,8 +41,8 @@ number of calculations to a minimum. Please note that I have not developed the U
 
 This step is straightforward. To keep only the relevant reviews for the NLP research a join is performed with the user
 file to keep only the most complimented users in scope. This increases the data quality while also making sure that only
-relevant data is processed. This same logic is applied on the years of reviews that are taken into consideration (2019
--2021, instead of all the reviews from 2004 onwards). 
+relevant data is processed. This same logic is applied on the years of reviews that are taken into consideration
+(2019-2021, instead of all the reviews from 2004 onwards). 
 
 ## 3. Create the yearly weather dataframe
 
@@ -54,12 +54,12 @@ want 1 row per review with the (aggregated) weather data, since most data-scienc
 on this type of data format (1 row is 1 observation, 1 column is the dependent variable, the others are independent).
 
 Since the data is imported into partitions in an unordered fashion, this step creates *a lot* of shuffle operations.
-The combination of the columns `station_id` and `weather_date` needs to searched, aggregated and send to new partitions
+The combination of the columns `station_id` and `weather_date` needs to be searched, aggregated and send to new partitions
 to do the first() calculation for each element per combination. A solution to increase the speed of this step is to
-partition the data by `station_id` and `weather_date` before doing the `pivot`. However, since I only use this dataframe
-once, it does not speed up the calculations. Another solution would be to store the data in .parquet form on S3, already
-partitioned by `station_id` and `weather_date` and then imported. However, the overhead of creating these partitions 
-caused by the massive I/O operations is not worth it the relatively small one-time pipeline. 
+partition the data by `station_id` and `weather_date` before doing the `pivot`. However, since this dataframe is only 
+used once, it does not speed up the calculations. Another solution would be to store the data in .parquet form on S3,
+already partitioned by `station_id` and `weather_date` and then imported. However, the overhead of creating these
+partitions caused by the massive I/O operations is not worth it.
 
 ### 4. Bring it all together
 
@@ -70,12 +70,12 @@ The last step but definitely not least. There are 3 expensive operations in this
 - aggregate the final table based on `('city', 'state', 'review_date', 'text')` and calculate the average value for
 each of these elements
 
-All together it takes ~1 hour to process these steps with the EMR setup as mentioned in the README. Although there are a 
+All together it takes ~20 minutes to process these steps with the EMR setup as mentioned in the README. Although there are a 
 few optimization improvements I have made with Spark configuration settings and filters, the real improvements (e.g., 
 partitioning, storing and importing the data in the right partitions) are not worth it given that this is not a 
-recurring pipeline. 
+recurring pipeline and relatively small. 
 
-Regardless, the end result is an interesting dataset on which numerous (NLP) research could be performed, e.g.:
+Regardless, the end result is an interesting dataset on which numerous (NLP) analysis can be performed, e.g.:
 
 - Sentiment analysis: does the weather influence the mood of the user that is writing the review? 
 - Text analysis: can you determine in which state someone lives dependent on their review?
