@@ -41,8 +41,8 @@ breaks.
 **The database needed to be accessed by 100+ people.**
 
 The 'database' of this project is S3. S3 is used by some of the biggest organizations in the world, handling far more
-than 100+ people. Just like handling 100x the size of the data, the (aws) cloud provides a flexible, highly scalable
-solution for which 500GB of data or 100+ people is extremely simple.
+than 100+ people. Just like handling 100x the size of the data, the (AWS) cloud provides a flexible, highly scalable
+solution for which 500GB of data or 100+ people is not that difficult. 
 
 
 [s3]: https://aws.amazon.com/s3/features/
