@@ -57,7 +57,7 @@ def get_s3_metadata(s3_bucket):
 
 def download_files(s3_bucket, count, total_mb_size):
     """Downloads the .json output files from S3, merges each file into 1 output file, and saves it locally as .gzip."""
-    logger.info("Start downloading the files from the S3 bucket...")
+    logger.info(f"Start downloading the {count-1} files with a size of {round(total_mb_size / 1e6)} MB from S3...")
     df = pd.DataFrame()
 
     for idx, object in enumerate(s3_bucket.objects.filter(Prefix='output'), start=1):
