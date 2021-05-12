@@ -2,7 +2,9 @@
 
 This project contains a data pipeline that creates a dataset of reviews of local businesses in the United States, and
 the local weather on the day of writing of that review. This dataset can help NLP researchers to examine whether
-there is a relationship between written text and the weather.
+there is a relationship between written text and the weather. A glimpse of the dataset:
+
+<img src="https://user-images.githubusercontent.com/49920622/118020706-b29d1680-b35a-11eb-98d0-87377f6aa0c4.JPG">
 
 ## The data
 
@@ -39,36 +41,57 @@ detailed description in the [documentation folder][documentation_md].
 
 <img src="https://user-images.githubusercontent.com/49920622/117587202-1c2fe180-b11d-11eb-849d-28ec3a6274dc.png">
 
-If you want to re-create this image yourself have a look at `dataflow.py`.
+If you want to create this diagram yourself have a look at `local_utils/dataflow.py`.
 
 ## Instructions
 
-To execute the pipeline there are a few things you need to do. Note that if you want to upload and download the files
-manually to S3 you can skip step 4-6 & 9. 
+To execute the pipeline there are a few things you need to do. To make life more easy I have provided 2 scripts in
+the `local_utils` folder that help to upload the data to S3, and download and merge the data from S3 after the Spark 
+script has finished. However, you can also upload and download all the files and scripts manually if you would like. 
+Please note that if you are going to use the scripts you also have to install and activate the accompanying virtual
+environment. 
 
 1. Clone this project
-2. Add 2 folders to the local project: /ghcn & /yelp
-3. Download the data from the 2 sources in `The Data` section into /ghcn & /yelp
-4. Modify settings.cfg 
-5. Install and activate the virtual environment based on the `environment.yml` file
+2. Add 2 folders to the local cloned project: /ghcn & /yelp (optional)
+3. Download the data from the 2 sources section 
+4. Move the data into the /ghcn & /yelp folders (optional)
+5. Make sure to add `year_` before the file names of the GHCN yearly weather data in order for the Spark script to load
+the files correctly
+6. Modify settings.cfg 
+
+The `settings.cfg` file has default settings based on using the helper scripts. If you do not plan to use them make sure
+the local_paths refer to the correct locations. The same goes for your s3 bucket and location, make sure the location
+corresponds with the location from your credentials in `.aws`. 
+
+If you receive any errors with regard to the AWS credentials please look here for more information [here][aws_cred]. 
+You can always set the credentials in the script if necessary. 
+
+Finally, the parameters have sensible defaults which result in 120K rows of reviews and meta data. You can tweak these
+parameters to get more or less accurate and / or relevant data. Please note that when you increase the parameters it will
+take (a lot) longer to execute the script. With the default settings it takes ~20 minutes to run the Spark script on EMR.
+
+7. Install and activate the virtual environment based on the `environment.yml` file (optional)
+
+Make sure you are in the top-level directory of the local project folder and enter the following commands:
 
 ```bash
 conda env create -f environment.yml
 conda activate nlp_weather
 ```
 
-You can also reproduce the diagram from the `Dataflow` section with this environment, the code can be found in
-`dataflow.py`.
+8. Upload the data and the spark_app files to S3
 
-6. Upload the data and the spark_app files to S3
+If you want to upload the files manually make sure to use the correct folder names:
 
-Make sure you are in the top-level directory of the project and execute the following command:
+<img src="https://user-images.githubusercontent.com/49920622/118023439-d6159080-b35d-11eb-92ae-29dda91a209a.JPG">
+
+If you use the script make sure you are in the top-level directory of the project and execute the following command:
 
 ```bash
 python local_utils/local_to_s3.py
 ```
 
-7. Activate a Spark cluster on EMR with access to the S3 bucket
+9. Activate a Spark cluster on EMR with access to the S3 bucket
 
 The spark_app was successfully tested with the following setup:
 
@@ -79,7 +102,7 @@ The spark_app was successfully tested with the following setup:
 
 Make sure that the Cluster can access the S3 bucket with the data and the spark_app files. 
 
-8. Connect to the Spark cluster with ssh, sync the spark_app folder with S3, and submit the spark job.
+10. Connect to the Spark cluster with ssh, sync the spark_app folder with S3, and submit the spark job.
 
 ```bash
 ssh -i <location to your .pem file> hadoop@<master-public-dns-name>
@@ -92,7 +115,7 @@ aws s3 sync s3://<your bucket>/spark_app .
 spark-submit --master yarn --conf spark.dynamicAllocation.enabled=true --py-files haversine_distance.py main.py
 ```
 
-9. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
+11. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
 
 ```bash
 python local_utils/s3_to_local.py
@@ -106,3 +129,4 @@ In case of any questions or remarks please contact me via LinkedIn or open a pul
 [ghcn]: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C00861/html
 [data_dictionary]: https://github.com/EBolle/NLP-Weather-dataset/blob/main/documentation/data_dictionary.MD
 [documentation_md]: https://github.com/EBolle/NLP-Weather-dataset/blob/main/documentation/data_model.MD
+[aws_cred]: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
