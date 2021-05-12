@@ -8,7 +8,7 @@ from logger import logger
 import pandas as pd
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read('spark_app/settings.cfg')
 
 output_folder = Path(config['LOCAL_PATHS']['output_folder'])
 s3_bucket_name = config['AWS']['s3_bucket']
@@ -64,10 +64,14 @@ def download_files(s3_bucket, count, total_mb_size):
         if object.key.endswith('json.gz'):
             if (idx % 10) == 0:
                 logger.debug(f"Downloading file {idx} / {count}...")
-            file_path = f"s3://{s3_bucket}/{object.key}"
+            file_path = f"s3://{s3_bucket.name}/{object.key}"
             temp_df = pd.read_json(file_path, lines=True)
             df = df.append(temp_df)
 
     output_folder.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Saving the merged files as 1 zipped file in {output_folder}/nlp_weather_dataset.json.gz...")
     df.to_json(f"{output_folder}/nlp_weather_dataset.json.gz", orient='records', compression='gzip')
+
+
+if __name__ == '__main__':
+    main()

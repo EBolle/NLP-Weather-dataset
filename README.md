@@ -70,11 +70,12 @@ python local_utils/local_to_s3.py
 
 7. Activate a Spark cluster on EMR with access to the S3 bucket
 
-The spark_app was successfully tested with the following EMR settings:
+The spark_app was successfully tested with the following setup:
 
-```bash
-EMR cluster CLI export here
-```
+- emr-6.2.0
+- Spark 3.0.1
+- Master: 1x m5.xlarge
+- Core: 2x m5.xlarge
 
 Make sure that the Cluster can access the S3 bucket with the data and the spark_app files. 
 
