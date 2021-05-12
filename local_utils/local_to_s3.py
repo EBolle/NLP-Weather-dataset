@@ -35,7 +35,7 @@ def main() -> None:
 
 
 def get_s3_client():
-    """Returns an S3 client, if you are not using credentials in a .aws folder set your credentials here."""
+    """Returns an S3 client, if you're credentials are not set via a .aws folder or other way set them here."""
     logger.info("Getting an S3 client...")
     s3_client = boto3.client('s3')
 
@@ -83,6 +83,11 @@ def upload_files(s3_client) -> None:
         s3_client.upload_file(Filename=str(file), Bucket=s3_bucket, Key=f'yelp/{file.name}')
 
     for idx, file in enumerate(ghcn_files, start=1):
+        for file in ghcn_files:
+            if any(map(str.isdigit, file.name)):
+                assert file.name.startswith(
+                    'year_'), f"Make sure the the yearly weather data files start with 'year_', found {file.name}"
+
         file_size = round(file.stat().st_size * 1e6)
         logger.debug(f"Uploading ghcn file {file.name} ({idx}/{len(ghcn_files)}), this file is {file_size} MB...")
         s3_client.upload_file(Filename=str(file), Bucket=s3_bucket, Key=f'ghcn/{file.name}')
