@@ -2,7 +2,7 @@ name: nlp_weather
 dependencies:
  - boto3=1.17.46
  - botocore=1.20.50
- - conda-forge::ffspec=2021.4.0
+ - conda-forge::fsspec=2021.4.0
  - pandas=1.2.4
  - conda-forge::s3fs=2021.4.0
  - pip
