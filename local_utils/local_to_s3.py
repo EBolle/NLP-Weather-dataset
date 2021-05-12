@@ -10,7 +10,7 @@ from logger import logger
 from pathlib import Path
 
 config = configparser.ConfigParser()
-config.read('settings.cfg')
+config.read('spark_app/settings.cfg')
 
 yelp_folder = Path(config['LOCAL_PATHS']['yelp_folder'])
 ghcn_folder = Path(config['LOCAL_PATHS']['ghcn_folder'])
@@ -71,24 +71,23 @@ def upload_files(s3_client) -> None:
 
     yelp_files = [path for path in yelp_folder.iterdir()]
     ghcn_files = [path for path in ghcn_folder.iterdir()]
-    spark_app_files = [path for path in Path('.') / 'spark_app']
+    spark_app_path = Path('.') / 'spark_app'
+    spark_app_files = [path for path in spark_app_path.iterdir()]
 
     for list in [yelp_files, ghcn_files, spark_app_files]:
         if not list:
             raise Warning(f"The {list} directory is empty, please check the directory path and the actual data.")
 
     for idx, file in enumerate(yelp_files, start=1):
-        file_size = round(file.stat().st_size * 1e6)
+        file_size = round(file.stat().st_size / 1e6)
         logger.debug(f"Uploading yelp file {file.name} ({idx}/{len(yelp_files)}), this file is {file_size} MB...")
         s3_client.upload_file(Filename=str(file), Bucket=s3_bucket, Key=f'yelp/{file.name}')
 
     for idx, file in enumerate(ghcn_files, start=1):
-        for file in ghcn_files:
-            if any(map(str.isdigit, file.name)):
-                assert file.name.startswith(
-                    'year_'), f"Make sure the the yearly weather data files start with 'year_', found {file.name}"
+        if any(map(str.isdigit, file.name)):
+            assert file.name.startswith('year_'), f"Make sure the the yearly weather data files start with 'year_', found {file.name}"
 
-        file_size = round(file.stat().st_size * 1e6)
+        file_size = round(file.stat().st_size / 1e6)
         logger.debug(f"Uploading ghcn file {file.name} ({idx}/{len(ghcn_files)}), this file is {file_size} MB...")
         s3_client.upload_file(Filename=str(file), Bucket=s3_bucket, Key=f'ghcn/{file.name}')
 
