@@ -19,15 +19,23 @@ s3_bucket = config['AWS']['s3_bucket']
 
 def main():
     """
+    Main execution method which sequentially calls the methods to execute the pipeline:
+    - Get or create a Spark session
+    - Create the distances dataframe
+    - Create the review dataframe
+    - Create the pivoted yearly weather dataframe
+    - Combine these 3 dataframes into the final dataframe
+    - Write the final dataframe to S3
+    - stop the spark session
     """
     spark = create_spark_session()
 
     distances = create_distances(spark)
     review = create_review(spark)
     yearly_weather = create_yearly_weather(spark)
-    final_table = create_final_table(distances, review, yearly_weather)
+    final_dataframe = create_final_dataframe(distances, review, yearly_weather)
 
-    write_final_table(final_table)
+    write_final_dataframe(final_dataframe)
 
     spark.stop()
 
@@ -51,13 +59,8 @@ def create_spark_session():
 
 def create_distances(spark) -> DataFrame:
     """
-    Combines the business.json and us_stations.txt file to create a dataframe with the closest weather stations
+    Combines the business and stations file to create a dataframe with the closest weather stations
     to the local business based on the `max_distance` parameter.
-
-    Arguments:
-
-    Returns:
-
     """
     business_path = f"s3://{s3_bucket}/yelp/yelp_academic_dataset_business.json.gz"
 
@@ -116,14 +119,8 @@ def create_distances(spark) -> DataFrame:
 
 def create_review(spark) -> DataFrame:
     """
-    Subsets the raw review data based on 2 filters:
-    - the business must be open
-    - only review from credible users are considered (> 25 useful reviews, top 15%)
-
-    Arguments:
-
-    Returns:
-
+    Combines the user and review files to create a new review dataframe with only open businesses and only users in the
+    top 25% of complimented writers. This last constraint can be controlled with the `compliment_writer` parameter.
     """
     user_path = f"s3://{s3_bucket}/yelp/yelp_academic_dataset_user.json.gz"
 
@@ -162,13 +159,9 @@ def create_review(spark) -> DataFrame:
 
 def create_yearly_weather(spark) -> DataFrame:
     """
-    Reads in 18 years of daily weather reports throughout the world. After filtering on US stations only, and keeping
+    Reads in 3 years of daily weather reports throughout the world. After filtering on US stations only, and keeping
     only the most prevalent key weather metrics, the dataframe needs to be pivotted so it can be easily joined with
     the review and distances dataframes.
-
-    Arguments:
-
-    Returns:
     """
     yearly_weather_path = f"s3://{s3_bucket}/ghcn/year_*"
     elements_to_keep = ['PRCP', 'SNOW', 'SNWD', 'TMAX', 'TMIN']
@@ -200,14 +193,11 @@ def create_yearly_weather(spark) -> DataFrame:
     return yearly_weather_pivot
 
 
-def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_pivot: DataFrame) -> DataFrame:
+def create_final_dataframe(distances: DataFrame, review: DataFrame, yearly_weather_pivot: DataFrame) -> DataFrame:
     """
-    Combines the 3 dataframes from step 1-3 to create the final table.
-
-    Arguments:
-
-    Returns:
-
+    Combines the 3 dataframes from the previous steps to create the final dataframe. This dataframe contains the not
+    only the actual review and the weather metrics, but also the date, state, and city so one can easily further extend
+    this final dataframe.
     """
     distance_review_join_condition = [distances.business_id == review.business_id]
 
@@ -238,8 +228,8 @@ def create_final_table(distances: DataFrame, review: DataFrame, yearly_weather_p
     return final_table
 
 
-def write_final_table(final_table: DataFrame):
-    """Writes the final table back to S3, you can modify the exact location in settings.cfg"""
+def write_final_dataframe(final_table: DataFrame):
+    """Writes the final table back to S3."""
     output_path = f"s3://{s3_bucket}/output/"
 
     final_table_write = (final_table
