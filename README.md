@@ -61,10 +61,9 @@ the files correctly
 
 The `settings.cfg` file has default settings based on using the helper scripts. If you do not plan to use them make sure
 the local_paths refer to the correct locations. The same goes for your s3 bucket and location, make sure the location
-corresponds with the location from your credentials in `.aws`. 
-
-If you receive any errors with regard to the AWS credentials please look here for more information [here][aws_cred]. 
-You can always set the credentials in the script if necessary. 
+corresponds with the location from your credentials if you have set them. If you receive any errors with regard to the
+AWS credentials please look here for more information [here][aws_cred]. You can always set the credentials in the script
+if necessary. 
 
 Finally, the parameters have sensible defaults which result in 120K rows of reviews and meta data. You can tweak these
 parameters to get more or less accurate and / or relevant data. Please note that when you increase the parameters it will
@@ -78,6 +77,8 @@ Make sure you are in the top-level directory of the local project folder and ent
 conda env create -f environment.yml
 conda activate nlp_weather
 ```
+
+If you do not use Anaconda use `venv` or `virtualenv` instead. 
 
 8. Upload the data and the spark_app files to S3
 
@@ -102,24 +103,29 @@ The spark_app was successfully tested with the following setup:
 
 Make sure that the Cluster can access the S3 bucket with the data and the spark_app files. 
 
-10. Connect to the Spark cluster with ssh, sync the spark_app folder with S3, and submit the spark job.
+10. Connect to the Spark cluster with ssh, sync the spark_app folder, and submit the spark job
 
 ```bash
-ssh -i <location to your .pem file> hadoop@<master-public-dns-name>
+ssh -i <location to your key-pair file> hadoop@<master-public-dns-name>
 ```
 
 Once connected to the cluster enter the following bash commands:
 
 ```bash
 aws s3 sync s3://<your bucket>/spark_app .
-spark-submit --master yarn --conf spark.dynamicAllocation.enabled=true --py-files haversine_distance.py main.py
+spark-submit --master yarn --py-files haversine_distance.py main.py
 ```
 
 11. Download the output .json files from S3 and merge into 1 zipped nlp-weather dataset file
 
+Once the Spark script is finished running and the files are correctly downloaded to S3, you may execute the following
+command: 
+
 ```bash
 python local_utils/s3_to_local.py
 ```
+
+This script created an `output` sub folder in the project folder with the zipped `nlp_weather_dataset`.
 
 ## Contact
 
