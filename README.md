@@ -13,7 +13,8 @@ The data originates from 2 sources of publicly available data:
 - [The Yelp Open Dataset][yelp]
 - [Global Historical Climatology Network (GHCN)][ghcn]
 
-To acknowledge the specific version of the GHCN dataset hereby the official citation:
+Hereby I would like to thank both organizations for making their data publicly available, they provide a great resource
+for learning and research. To acknowledge the specific version of the GHCN dataset hereby the official citation:
 
 > Menne, M.J., I. Durre, B. Korzeniewski, S. McNeal, K. Thomas, X. Yin, S. Anthony, R. Ray, 
 R.S. Vose, B.E.Gleason, and T.G. Houston, 2012: Global Historical Climatology Network - 
