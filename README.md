@@ -110,7 +110,7 @@ Dependent on your connection it can take quite some time before the files are up
 The spark_app was successfully tested with the following setup:
 
 - emr-6.3.0
-- Spark 3.0.1, Hadoop 3.2.1, YARN, Zeppelin 0.9.0
+- Spark 3.0.1, Hadoop 3.2.1, YARN
 - Master: 1x m5.xlarge
 - Core: 2x m5.xlarge
 
